@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Annealing Works — Turning jobs that do good into good jobs</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --forge-black: #1a1714;
+  --hot-metal: #e86a2a;
+  --warm-copper: #c17840;
+  --glowing-amber: #f0a846;
+  --cool-steel: #8a9bae;
+  --tempered-blue: #4a6274;
+  --ash-light: #f4f0eb;
+  --ash-mid: #e8e2da;
+  --warm-white: #faf8f5;
+  --smoke: #6b6560;
+  --ember: #d44a1a;
+  --patina: #5a7a6a;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--warm-white);
+  color: var(--forge-black);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== GRAIN OVERLAY ===== */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ===== NAVIGATION ===== */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  padding: 1.2rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(250, 248, 245, 0.9);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(193, 120, 64, 0.1);
+  transition: all 0.3s ease;
+}
+
+nav.scrolled {
+  padding: 0.8rem 2rem;
+  box-shadow: 0 2px 20px rgba(26, 23, 20, 0.06);
+}
+
+.nav-logo {
+  font-family: 'Crimson Pro', serif;
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: var(--forge-black);
+  text-decoration: none;
+  letter-spacing: -0.02em;
+}
+
+.nav-logo span { color: var(--hot-metal); }
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+  align-items: center;
+}
+
+.nav-links a {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--smoke);
+  text-decoration: none;
+  transition: color 0.2s;
+  letter-spacing: 0.01em;
+}
+
+.nav-links a:hover { color: var(--hot-metal); }
+
+.nav-cta {
+  background: var(--hot-metal) !important;
+  color: var(--warm-white) !important;
+  padding: 0.55rem 1.3rem;
+  border-radius: 6px;
+  font-weight: 600 !important;
+  transition: background 0.2s, transform 0.2s !important;
+}
+
+.nav-cta:hover {
+  background: var(--ember) !important;
+  transform: translateY(-1px);
+}
+
+/* Mobile nav */
+.nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.nav-toggle span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--forge-black);
+  margin: 5px 0;
+  transition: all 0.3s;
+}
+
+/* ===== HERO ===== */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 8rem 2rem 4rem;
+  position: relative;
+  overflow: hidden;
+  background: 
+    radial-gradient(ellipse at 20% 80%, rgba(232, 106, 42, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(240, 168, 70, 0.04) 0%, transparent 50%),
+    var(--warm-white);
+}
+
+/* Decorative heat shimmer lines */
+.hero::after {
+  content: '';
+  position: absolute;
+  top: 15%;
+  right: 5%;
+  width: 300px;
+  height: 400px;
+  background: 
+    repeating-linear-gradient(
+      -15deg,
+      transparent,
+      transparent 30px,
+      rgba(232, 106, 42, 0.04) 30px,
+      rgba(232, 106, 42, 0.04) 31px
+    );
+  pointer-events: none;
+  animation: shimmer 8s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 0.5; transform: translateY(0); }
+  50% { opacity: 1; transform: translateY(-10px); }
+}
+
+.hero-content {
+  max-width: 820px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-tagline {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--warm-copper);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  animation: fadeUp 0.6s ease 0.2s forwards;
+}
+
+.hero h1 {
+  font-family: 'Crimson Pro', serif;
+  font-size: clamp(2.8rem, 6vw, 4.5rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: var(--forge-black);
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  animation: fadeUp 0.6s ease 0.4s forwards;
+}
+
+.hero h1 em {
+  font-style: italic;
+  font-weight: 300;
+  color: var(--hot-metal);
+}
+
+.hero-sub {
+  font-size: 1.2rem;
+  line-height: 1.7;
+  color: var(--smoke);
+  max-width: 600px;
+  margin-bottom: 2.5rem;
+  opacity: 0;
+  animation: fadeUp 0.6s ease 0.6s forwards;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  opacity: 0;
+  animation: fadeUp 0.6s ease 0.8s forwards;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--hot-metal);
+  color: var(--warm-white);
+  padding: 0.9rem 1.8rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.25s;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: var(--ember);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(232, 106, 42, 0.3);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: var(--forge-black);
+  padding: 0.9rem 1.8rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  border: 2px solid var(--ash-mid);
+  transition: all 0.25s;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  border-color: var(--warm-copper);
+  color: var(--warm-copper);
+  transform: translateY(-2px);
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== SECTION STYLING ===== */
+section {
+  padding: 6rem 2rem;
+}
+
+.section-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--warm-copper);
+  margin-bottom: 1rem;
+}
+
+.section-heading {
+  font-family: 'Crimson Pro', serif;
+  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.5rem;
+}
+
+/* ===== PROBLEM SECTION ===== */
+.problem {
+  background: var(--forge-black);
+  color: var(--ash-light);
+  position: relative;
+  overflow: hidden;
+}
+
+.problem::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: 
+    radial-gradient(ellipse at 70% 30%, rgba(232, 106, 42, 0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 20% 80%, rgba(193, 120, 64, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.problem .section-inner {
+  position: relative;
+  z-index: 1;
+}
+
+.problem .section-heading {
+  color: var(--ash-light);
+}
+
+.problem-text {
+  font-size: 1.15rem;
+  line-height: 1.8;
+  color: var(--cool-steel);
+  max-width: 700px;
+}
+
+.problem-text strong {
+  color: var(--glowing-amber);
+  font-weight: 600;
+}
+
+.problem-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+  margin-top: 3rem;
+  padding-top: 3rem;
+  border-top: 1px solid rgba(138, 155, 174, 0.15);
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-number {
+  font-family: 'Crimson Pro', serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--hot-metal);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--cool-steel);
+  margin-top: 0.5rem;
+  line-height: 1.4;
+}
+
+/* ===== THE METAPHOR ===== */
+.metaphor {
+  background: var(--ash-light);
+  border-top: 1px solid var(--ash-mid);
+  border-bottom: 1px solid var(--ash-mid);
+}
+
+.metaphor-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+.metaphor-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.anneal-diagram {
+  width: 100%;
+  max-width: 350px;
+  aspect-ratio: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.anneal-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid;
+  animation: pulse-ring 4s ease-in-out infinite;
+}
+
+.anneal-ring:nth-child(1) {
+  width: 100%; height: 100%;
+  border-color: rgba(232, 106, 42, 0.1);
+  animation-delay: 0s;
+}
+
+.anneal-ring:nth-child(2) {
+  width: 75%; height: 75%;
+  border-color: rgba(232, 106, 42, 0.2);
+  animation-delay: 0.5s;
+}
+
+.anneal-ring:nth-child(3) {
+  width: 50%; height: 50%;
+  border-color: rgba(232, 106, 42, 0.35);
+  animation-delay: 1s;
+}
+
+.anneal-core {
+  width: 60px; height: 60px;
+  background: radial-gradient(circle, var(--glowing-amber), var(--hot-metal));
+  border-radius: 50%;
+  box-shadow: 0 0 40px rgba(232, 106, 42, 0.4), 0 0 80px rgba(232, 106, 42, 0.15);
+  z-index: 1;
+  animation: glow 4s ease-in-out infinite;
+}
+
+@keyframes pulse-ring {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.05); opacity: 0.7; }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 40px rgba(232, 106, 42, 0.4), 0 0 80px rgba(232, 106, 42, 0.15); }
+  50% { box-shadow: 0 0 60px rgba(232, 106, 42, 0.6), 0 0 120px rgba(232, 106, 42, 0.25); }
+}
+
+.metaphor-caption {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--smoke);
+  text-align: center;
+  letter-spacing: 0.05em;
+}
+
+.metaphor-text p {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: var(--smoke);
+  margin-bottom: 1rem;
+}
+
+.metaphor-text strong {
+  color: var(--forge-black);
+}
+
+/* ===== SERVICES ===== */
+.services-grid {
+  display: grid;
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.service-card {
+  background: var(--warm-white);
+  border: 1px solid var(--ash-mid);
+  border-radius: 12px;
+  padding: 2.5rem;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.service-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--hot-metal), var(--glowing-amber));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.4s ease;
+}
+
+.service-card:hover {
+  border-color: rgba(232, 106, 42, 0.2);
+  box-shadow: 0 8px 40px rgba(26, 23, 20, 0.06);
+  transform: translateY(-3px);
+}
+
+.service-card:hover::before {
+  transform: scaleX(1);
+}
+
+.service-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--warm-copper);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 0.75rem;
+}
+
+.service-title {
+  font-family: 'Crimson Pro', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.01em;
+}
+
+.service-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: var(--warm-copper);
+  margin-bottom: 1.2rem;
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.service-desc {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--smoke);
+  margin-bottom: 1.2rem;
+}
+
+.service-includes {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--smoke);
+}
+
+.service-includes span {
+  display: block;
+  padding: 0.3rem 0;
+  padding-left: 1.2rem;
+  position: relative;
+}
+
+.service-includes span::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--hot-metal);
+}
+
+/* ===== QUIZ TEASER ===== */
+.quiz-teaser {
+  background: linear-gradient(135deg, var(--forge-black) 0%, #2a2420 100%);
+  color: var(--ash-light);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.quiz-teaser::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%;
+  width: 200%; height: 200%;
+  background: radial-gradient(ellipse, rgba(232, 106, 42, 0.06) 0%, transparent 70%);
+  animation: drift 10s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(5%, 3%); }
+}
+
+.quiz-teaser .section-inner {
+  position: relative;
+  z-index: 1;
+}
+
+.quiz-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.quiz-teaser .section-heading {
+  color: var(--ash-light);
+  max-width: 600px;
+  margin: 0 auto 1rem;
+}
+
+.quiz-teaser p {
+  color: var(--cool-steel);
+  font-size: 1.05rem;
+  max-width: 500px;
+  margin: 0 auto 2rem;
+  line-height: 1.6;
+}
+
+.quiz-badge {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--glowing-amber);
+  border: 1px solid rgba(240, 168, 70, 0.3);
+  padding: 0.5rem 1.2rem;
+  border-radius: 100px;
+}
+
+/* ===== ABOUT ===== */
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 4rem;
+  align-items: start;
+}
+
+.about-photo-area {
+  position: relative;
+}
+
+.photo-placeholder {
+  aspect-ratio: 3/4;
+  background: var(--ash-light);
+  border-radius: 12px;
+  border: 2px dashed var(--ash-mid);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--smoke);
+  font-size: 0.85rem;
+}
+
+.photo-placeholder .icon {
+  font-size: 2rem;
+  opacity: 0.4;
+}
+
+.about-text p {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: var(--smoke);
+  margin-bottom: 1.2rem;
+}
+
+.about-text strong {
+  color: var(--forge-black);
+}
+
+.credentials {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--ash-mid);
+}
+
+.credentials-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--warm-copper);
+  margin-bottom: 1rem;
+}
+
+.cred-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cred-tag {
+  font-size: 0.8rem;
+  padding: 0.35rem 0.8rem;
+  background: var(--ash-light);
+  border-radius: 100px;
+  color: var(--smoke);
+  border: 1px solid var(--ash-mid);
+}
+
+/* ===== CTA ===== */
+.cta {
+  text-align: center;
+  background: var(--ash-light);
+  border-top: 1px solid var(--ash-mid);
+}
+
+.cta .section-heading {
+  max-width: 600px;
+  margin: 0 auto 1rem;
+}
+
+.cta p {
+  color: var(--smoke);
+  font-size: 1.05rem;
+  max-width: 500px;
+  margin: 0 auto 2rem;
+  line-height: 1.6;
+}
+
+/* ===== FOOTER ===== */
+footer {
+  background: var(--forge-black);
+  color: var(--cool-steel);
+  padding: 3rem 2rem;
+}
+
+.footer-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.footer-logo {
+  font-family: 'Crimson Pro', serif;
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: var(--ash-light);
+}
+
+.footer-logo span { color: var(--hot-metal); }
+
+.footer-tagline {
+  font-size: 0.8rem;
+  margin-top: 0.3rem;
+  color: var(--cool-steel);
+}
+
+.footer-links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.footer-links a {
+  color: var(--cool-steel);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover { color: var(--hot-metal); }
+
+.footer-copy {
+  width: 100%;
+  text-align: center;
+  font-size: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(138, 155, 174, 0.15);
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .nav-links { display: none; }
+  .nav-toggle { display: block; }
+  
+  .nav-links.open {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0; right: 0;
+    background: rgba(250, 248, 245, 0.98);
+    backdrop-filter: blur(12px);
+    padding: 1.5rem 2rem;
+    gap: 1rem;
+    border-bottom: 1px solid var(--ash-mid);
+  }
+  
+  .metaphor-grid,
+  .about-grid {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+  
+  .metaphor-visual { order: -1; }
+  
+  .anneal-diagram { max-width: 250px; }
+  
+  .hero { padding: 7rem 1.5rem 3rem; }
+  
+  section { padding: 4rem 1.5rem; }
+  
+  .service-card { padding: 1.8rem; }
+  
+  .problem-stats { grid-template-columns: 1fr; gap: 1.5rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== NAVIGATION ===== -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">Annealing <span>Works</span></a>
+  <button class="nav-toggle" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <ul class="nav-links">
+    <li><a href="#problem">The Problem</a></li>
+    <li><a href="#approach">Our Approach</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#contact" class="nav-cta">Book a Call</a></li>
+  </ul>
+</nav>
+
+<!-- ===== HERO ===== -->
+<section class="hero">
+  <div class="hero-content">
+    <p class="hero-tagline">Organizational repair for mission-driven teams</p>
+    <h1>Turning jobs that do good <em>into good&nbsp;jobs</em></h1>
+    <p class="hero-sub">
+      You know how your friends who work in nonprofits and government are the saddest and most frustrated people you know? We fix that. We transform teams from burned out, tense, and conflict-ridden to supportive, thriving, and&nbsp;creative.
+    </p>
+    <div class="hero-actions">
+      <a href="#contact" class="btn-primary">Book a Discovery Call →</a>
+      <a href="#services" class="btn-secondary">See How We Work</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== THE PROBLEM ===== -->
+<section class="problem" id="problem">
+  <div class="section-inner">
+    <p class="section-label">The Problem</p>
+    <h2 class="section-heading">Great missions.<br>Broken workplaces.</h2>
+    <div class="problem-text">
+      <p>
+        Nonprofits and government agencies exist to create positive change — yet too often, they achieve that mission by breaking the people doing the work. 
+        Underpaid staff, chronic overwork, unresolved conflict, and bureaucratic dysfunction get treated as <strong>inevitable costs of doing good</strong>.
+      </p>
+      <p style="margin-top: 1rem;">
+        They're not inevitable. They're symptoms of people systems that aren't built to support the mission they serve. And when your team is drowning in dysfunction they didn't create, <strong>community impact suffers</strong>.
+      </p>
+      <p style="margin-top: 1rem;">
+        The people most committed to solving systemic problems shouldn't have to sacrifice their own wellbeing to do it.
+      </p>
+    </div>
+    <div class="problem-stats">
+      <div class="stat">
+        <div class="stat-number">#1</div>
+        <div class="stat-label">Rhode Island's per-capita<br>nonprofit rate nationwide</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">45%</div>
+        <div class="stat-label">of nonprofit workers report<br>burnout symptoms</div>
+      </div>
+      <div class="stat">
+        <div class="stat-number">2×</div>
+        <div class="stat-label">turnover costs vs.<br>investing in culture repair</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== THE METAPHOR ===== -->
+<section class="metaphor" id="approach">
+  <div class="section-inner">
+    <div class="metaphor-grid">
+      <div class="metaphor-visual">
+        <div class="anneal-diagram">
+          <div class="anneal-ring"></div>
+          <div class="anneal-ring"></div>
+          <div class="anneal-ring"></div>
+          <div class="anneal-core"></div>
+        </div>
+        <p class="metaphor-caption">Annealing: applying heat to restore flexibility to brittle metal</p>
+      </div>
+      <div class="metaphor-text">
+        <p class="section-label">The Approach</p>
+        <h2 class="section-heading">Same transformation.<br>Human systems.</h2>
+        <p>
+          In metallurgy, <strong>annealing</strong> is the process of carefully heating overworked, brittle metal to restore it to a flexible and workable state. The metal isn't broken — it's been stressed beyond its capacity to bend.
+        </p>
+        <p>
+          Teams work the same way. When people are overloaded, under-supported, and stuck in dysfunction they didn't create, the system gets rigid. Creativity dies. Conflict festers. Good people leave.
+        </p>
+        <p>
+          <strong>We bring the heat — carefully, strategically — so your team can bend again.</strong> Drawing on conflict resolution, organizational design, HR practice, governance, and leadership coaching, we trace workplace pain back to its source and build fixes across every level.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SERVICES ===== -->
+<section class="services" id="services">
+  <div class="section-inner">
+    <p class="section-label">Services</p>
+    <h2 class="section-heading">Three ways in</h2>
+    <p style="color: var(--smoke); font-size: 1.05rem; max-width: 600px; line-height: 1.7; margin-bottom: 1rem;">
+      Every engagement starts with understanding your system. We offer three levels of depth — start where it makes sense and go deeper if you need&nbsp;to.
+    </p>
+
+    <div class="services-grid">
+      <!-- Service 1 -->
+      <div class="service-card">
+        <p class="service-number">01 — The Entry Point</p>
+        <h3 class="service-title">People Systems Mapping Workshop</h3>
+        <div class="service-meta">
+          <span>Half-day facilitated session</span>
+          <span>Starting at $1,500</span>
+        </div>
+        <p class="service-desc">
+          Your team co-maps how your people systems actually work — not the org chart version, the real one. Roles, decision-making, communication, accountability. Together we surface the gaps between how things are supposed to work and how they actually do.
+        </p>
+        <div class="service-includes">
+          <span>Facilitated connection cycle with your full team</span>
+          <span>Visual map of current people systems as your team experiences them</span>
+          <span>Shared language for the pain points and where they originate</span>
+          <span>Clear picture of what needs to change — built by the people who live it</span>
+        </div>
+      </div>
+
+      <!-- Service 2 -->
+      <div class="service-card">
+        <p class="service-number">02 — The Diagnostic</p>
+        <h3 class="service-title">Organizational Alignment Assessment</h3>
+        <div class="service-meta">
+          <span>~3 month engagement</span>
+          <span>Starting at $15,000</span>
+        </div>
+        <p class="service-desc">
+          A thorough assessment of how your people systems — roles, governance, leadership, decision-making, and culture — align with your mission and strategic goals. We diagnose root causes, not symptoms, and deliver findings as a presentation with a concrete action roadmap.
+        </p>
+        <div class="service-includes">
+          <span>Stakeholder interviews and systems analysis across all levels</span>
+          <span>Assessment of roles, governance, and leadership alignment</span>
+          <span>Root-cause diagnosis of recurring dysfunction patterns</span>
+          <span>Presentation of findings and prioritized action roadmap</span>
+        </div>
+      </div>
+
+      <!-- Service 3 -->
+      <div class="service-card">
+        <p class="service-number">03 — The Full Transformation</p>
+        <h3 class="service-title">Transformation Partnership</h3>
+        <div class="service-meta">
+          <span>6–9 month engagement</span>
+          <span>Starting at $30,000 · Fully custom</span>
+        </div>
+        <p class="service-desc">
+          The complete Annealing Works experience. We don't just diagnose what's broken — we stay and help you rebuild it. Co-designed implementation of new people systems, leadership coaching, and culture change, with ongoing support to make sure it sticks.
+        </p>
+        <div class="service-includes">
+          <span>Full organizational alignment assessment</span>
+          <span>Co-designed implementation of structural and cultural changes</span>
+          <span>Leadership coaching and team development</span>
+          <span>Ongoing maintenance support and progress tracking</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== QUIZ TEASER ===== -->
+<section class="quiz-teaser" id="quiz">
+  <div class="section-inner">
+    <div class="quiz-icon">🔥</div>
+    <h2 class="section-heading">Is your workplace culture helping or hurting your&nbsp;mission?</h2>
+    <p>
+      A quick assessment to help you see where your people systems are supporting your work — and where they're silently undermining it.
+    </p>
+    <div class="quiz-badge">Coming Soon</div>
+  </div>
+</section>
+
+<!-- ===== ABOUT ===== -->
+<section class="about" id="about">
+  <div class="section-inner">
+    <div class="about-grid">
+      <div class="about-photo-area">
+        <div class="photo-placeholder">
+          <span class="icon">📸</span>
+          <span>Your photo here</span>
+        </div>
+      </div>
+      <div class="about-text">
+        <p class="section-label">About</p>
+        <h2 class="section-heading">Hi, I'm Autumn.</h2>
+        <p>
+          I do repair for complex human systems. Right now, that means helping small mission-driven teams in Rhode Island and Southern New England transform their workplace cultures from something people survive into something people&nbsp;thrive&nbsp;in.
+        </p>
+        <p>
+          I've built workplace culture from scratch for a gov-tech startup, consulted with city agencies on organizational change, and helped launch an impact investing fund from zero. The common thread: <strong>I show up when the human systems are under stress</strong> and I help them work&nbsp;again.
+        </p>
+        <p>
+          I believe that when organizations do right by their people, they do better work for their communities. That's not a nice idea — it's an operational reality. And I'm here to help you&nbsp;prove&nbsp;it.
+        </p>
+        <div class="credentials">
+          <p class="credentials-label">Credentials & Background</p>
+          <div class="cred-list">
+            <span class="cred-tag">MS Organizational Psychology, LSE</span>
+            <span class="cred-tag">Certified Change Management Practitioner</span>
+            <span class="cred-tag">Business Ethics Certificate, Cornell Law</span>
+            <span class="cred-tag">Leadership Rhode Island</span>
+            <span class="cred-tag">United Way Deputy Director Program</span>
+            <span class="cred-tag">SEG Incubator Alumni</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="cta" id="contact">
+  <div class="section-inner">
+    <p class="section-label">Let's Talk</p>
+    <h2 class="section-heading">Your mission is too important for your team to be&nbsp;struggling.</h2>
+    <p>
+      Book a free 30-minute discovery call. We'll talk about what's going on, whether we're a fit, and what the path forward could look&nbsp;like.
+    </p>
+    <a href="#" class="btn-primary" style="font-size: 1.1rem; padding: 1rem 2.2rem;">
+      Book a Discovery Call →
+    </a>
+    <p style="margin-top: 1.5rem; font-size: 0.85rem; color: var(--smoke);">
+      Or email directly: <a href="mailto:autumn@annealingworks.com" style="color: var(--warm-copper); text-decoration: underline;">autumn@annealingworks.com</a>
+    </p>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <p class="footer-logo">Annealing <span>Works</span></p>
+      <p class="footer-tagline">Turning jobs that do good into good jobs.</p>
+    </div>
+    <div class="footer-links">
+      <a href="#services">Services</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <p class="footer-copy">
+      © 2026 Annealing Works LLC · Providence, Rhode Island · Serving Southern New England
+    </p>
+  </div>
+</footer>
+
+<script>
+// Navbar scroll effect
+const nav = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 50);
+});
+
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Close mobile nav if open
+      document.querySelector('.nav-links').classList.remove('open');
+    }
+  });
+});
+
+// Simple scroll reveal
+const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateY(0)';
+    }
+  });
+}, observerOptions);
+
+document.querySelectorAll('.service-card, .stat, .about-text, .metaphor-text').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(20px)';
+  el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+  observer.observe(el);
+});
+</script>
+
+</body>
+</html>
